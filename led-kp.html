@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Калькулятор LED-экрана — СВЕТОДИОД</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --bg:#0d0f14; --surface:#161920; --surface2:#1e2230; --border:#2a2f3d;
+    --accent:#00c8ff; --green:#00e096; --yellow:#ffd166;
+    --text:#e8ecf4; --muted:#7a84a0; --r:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;font-size:14px;min-height:100vh}
+  header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .logo-wrap{display:flex;align-items:center;gap:12px}
+  .logo-icon{width:36px;height:36px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:18px;color:#000;letter-spacing:1px}
+  .logo-text{font-family:'Bebas Neue';font-size:22px;letter-spacing:2px}
+  .logo-sub{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:-2px}
+  .hc{font-size:12px;color:var(--muted);text-align:right;line-height:1.7}
+  .hc a{color:var(--accent);text-decoration:none}
+  .container{max-width:980px;margin:0 auto;padding:24px 16px 60px}
+  .page-title{font-family:'Bebas Neue';font-size:34px;letter-spacing:3px;margin-bottom:4px}
+  .page-sub{color:var(--muted);font-size:13px;margin-bottom:24px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px}
+  .card-title{font-family:'Bebas Neue';font-size:15px;letter-spacing:2px;color:var(--accent);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  .card-title::before{content:'';display:block;width:3px;height:14px;background:var(--accent);border-radius:2px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+  .field input,.field select{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'Manrope';font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none}
+  .field input:focus,.field select:focus{border-color:var(--accent)}
+  .hint{font-size:11px;margin-top:4px}
+  .hint-ok{color:var(--green)} .hint-warn{color:var(--yellow)}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .info-block{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:12px}
+  .ib-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)}
+  .ib-row:last-child{border-bottom:none}
+  .ib-label{color:var(--muted);font-size:12px}
+  .ib-value{font-weight:700;font-size:13px}
+  .ib-value.a{color:var(--accent)} .ib-value.y{color:var(--yellow)} .ib-value.g{color:var(--green)}
+  .vc-list{display:flex;flex-direction:column;gap:6px}
+  .vc-opt{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;cursor:pointer;transition:border-color .15s}
+  .vc-opt:hover{border-color:#4a90b8}
+  .vc-opt.sel{border-color:var(--accent);background:rgba(0,200,255,.06)}
+  .vc-opt.rec{border-color:var(--green)}
+  .vc-opt.rec.sel{background:rgba(0,224,150,.06)}
+  .vc-dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:.15s}
+  .vc-opt.sel .vc-dot{background:var(--accent);border-color:var(--accent)}
+  .vc-opt.rec.sel .vc-dot{background:var(--green);border-color:var(--green)}
+  .vc-name{font-size:12px;font-weight:600;flex:1}
+  .badge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:700}
+  .badge-r{background:rgba(0,224,150,.15);color:var(--green)}
+  .badge-o{background:rgba(0,200,255,.1);color:var(--accent)}
+  .sec-label{font-family:'Bebas Neue';font-size:13px;letter-spacing:2px;color:var(--muted);padding:8px 0 6px;border-bottom:1px solid var(--border);margin-bottom:2px}
+  .rrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+  .rl{color:var(--muted);font-size:12px;flex:1;padding-right:8px}
+  .rv{font-weight:600;font-size:12px;text-align:right}
+  .prow{display:grid;grid-template-columns:1fr 56px 72px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+  .pn{font-size:12px} .pq{font-size:11px;color:var(--muted);text-align:right} .ps{font-weight:700;font-size:12px;color:var(--accent);text-align:right}
+  .total-row{background:var(--accent);border-radius:8px;padding:13px 16px;display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+  .tl{font-family:'Bebas Neue';font-size:15px;letter-spacing:1px;color:#000}
+  .tv{font-family:'Bebas Neue';font-size:22px;color:#000}
+  .btn-pdf{width:100%;padding:15px;margin-top:16px;background:var(--accent);border:none;border-radius:var(--r);font-family:'Bebas Neue';font-size:18px;letter-spacing:3px;color:#000;cursor:pointer;transition:background .2s}
+  .btn-pdf:hover{background:#33d4ff}
+  .btn-pdf:disabled{background:var(--border);color:var(--muted);cursor:not-allowed}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;font-weight:700;padding:12px 24px;border-radius:30px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+  .toast.show{opacity:1}
+  select option{background:#1e2230}
+  @media(max-width:640px){.grid{grid-template-columns:1fr}.page-title{font-size:26px}header{flex-direction:column;gap:8px;text-align:center}.field-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-wrap">
+    <div class="logo-icon">СВ</div>
+    <div><div class="logo-text">СВЕТОДИОД</div><div class="logo-sub">LED-калькулятор КП</div></div>
+  </div>
+  <div class="hc">
+    <a href="tel:+78612929800">+7 (861) 29-29-800</a> &nbsp;|&nbsp; <a href="tel:+79288849800">+7 (928) 88-49-800</a><br>
+    <a href="mailto:tkled@mail.ru">tkled@mail.ru</a> &nbsp;|&nbsp; <a href="https://tkled.ru" target="_blank">tkled.ru</a>
+  </div>
+</header>
+
+<div class="container">
+  <div class="page-title">КАЛЬКУЛЯТОР LED-ЭКРАНА</div>
+  <div class="page-sub">Заполните параметры — КП сформируется автоматически</div>
+  <div class="grid">
+
+    <!-- ЛЕВАЯ: ФОРМА -->
+    <div>
+      <div class="card">
+        <div class="card-title">Клиент / Проект</div>
+        <div class="field"><label>Клиент / Объект</label><input type="text" id="client" placeholder="ТЦ Мегаполис, Ростов-на-Дону"></div>
+        <div class="field-row">
+          <div class="field"><label>Менеджер</label><input type="text" id="manager" placeholder="Имя"></div>
+          <div class="field"><label>Дата КП</label><input type="date" id="kp_date"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Параметры экрана</div>
+        <div class="field-row">
+          <div class="field"><label>Длина, см</label><input type="number" id="length" value="384" min="1" oninput="calc()"><div class="hint" id="hl"></div></div>
+          <div class="field"><label>Высота, см</label><input type="number" id="height" value="288" min="1" oninput="calc()"><div class="hint" id="hh"></div></div>
+        </div>
+        <div class="field"><label>Тип модуля</label>
+          <select id="module" onchange="calc()">
+            <option>Q2 Indoor 6000hz</option><option>Q2 Indoor 3840hz</option>
+            <option>Q2.5 Indoor 6000hz</option><option>Q2.5 Indoor 3840hz</option><option>Q2.5 Indoor 1920hz</option>
+            <option>Q3.07 Indoor 6000hz</option><option>Q3.07 Indoor 3840hz</option><option>Q3.07 Indoor 1920hz</option>
+            <option>Q4 Indoor 6000hz</option><option>Q4 Indoor 3840hz</option><option>Q4 Indoor 1920hz</option>
+            <option>Q4 Outdoor 7680hz</option><option>Q4 Outdoor 2880hz</option>
+            <option>Q5 Outdoor 7680hz</option><option>Q5 Outdoor 2880hz</option>
+            <option>Q6.66 Outdoor 7680hz</option><option>Q6.66 Outdoor 2880hz</option>
+            <option>Q8 Outdoor 7680hz</option><option>Q8 Outdoor 2880hz</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Тип</label>
+            <select id="env" onchange="calc()"><option>Indoor</option><option>Outdoor</option></select>
+          </div>
+          <div class="field"><label>Ценовая категория</label>
+            <select id="pc" onchange="calc()"><option value="0">Розница</option><option value="1" selected>Опт</option><option value="2">Крупный опт</option></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Видеопроцессор</div>
+        <div class="info-block">
+          <div class="ib-row"><span class="ib-label">Всего пикселей</span><span class="ib-value a" id="i_pix">—</span></div>
+          <div class="ib-row"><span class="ib-label">Карт MRV412</span><span class="ib-value" id="i_cards">—</span></div>
+          <div class="ib-row"><span class="ib-label">Портов (минимум)</span><span class="ib-value y" id="i_ports">—</span></div>
+        </div>
+        <div class="vc-list" id="vc_list"></div>
+      </div>
+    </div>
+
+    <!-- ПРАВАЯ: РЕЗУЛЬТАТ -->
+    <div>
+      <div class="card">
+        <div class="card-title">Результат КП</div>
+
+        <div class="sec-label">ТЕХНИЧЕСКИЕ ХАРАКТЕРИСТИКИ</div>
+        <div class="rrow"><span class="rl">Тип модуля / Pixel pitch</span><span class="rv" id="r_mod">—</span></div>
+        <div class="rrow"><span class="rl">Тип применения</span><span class="rv" id="r_env">—</span></div>
+        <div class="rrow"><span class="rl">Размер экрана (Д × В)</span><span class="rv" id="r_size">—</span></div>
+        <div class="rrow"><span class="rl">Площадь, м²</span><span class="rv" id="r_area">—</span></div>
+        <div class="rrow"><span class="rl">Размер модуля</span><span class="rv" id="r_msz">—</span></div>
+        <div class="rrow"><span class="rl">Модулей (Ш × В = итого)</span><span class="rv" id="r_mods">—</span></div>
+        <div class="rrow"><span class="rl">Разрешение экрана</span><span class="rv" id="r_res">—</span></div>
+        <div class="rrow"><span class="rl">Всего пикселей</span><span class="rv" id="r_pix">—</span></div>
+        <div class="rrow"><span class="rl">Плотность, пикс/м²</span><span class="rv" id="r_dens">—</span></div>
+        <div class="rrow"><span class="rl">Яркость</span><span class="rv" id="r_bright">—</span></div>
+        <div class="rrow"><span class="rl">IP защита</span><span class="rv" id="r_ip">—</span></div>
+        <div class="rrow"><span class="rl">Рефреш</span><span class="rv" id="r_ref">—</span></div>
+        <div class="rrow"><span class="rl">Потребление макс/раб/ном, Вт</span><span class="rv" id="r_pwr">—</span></div>
+        <div class="rrow"><span class="rl">Видеопроцессор</span><span class="rv" id="r_vc">—</span></div>
+        <div class="rrow"><span class="rl">Портов</span><span class="rv" id="r_ports">—</span></div>
+
+        <div class="sec-label" style="margin-top:14px">СТОИМОСТЬ КОМПЛЕКТУЮЩИХ</div>
+        <div class="prow" style="padding-bottom:4px">
+          <span style="font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--muted)">ПОЗИЦИЯ</span>
+          <span style="font-size:10px;font-weight:700;color:var(--muted);text-align:right">КОЛ-ВО</span>
+          <span style="font-size:10px;font-weight:700;color:var(--muted);text-align:right">СУММА $</span>
+        </div>
+        <div class="prow"><span class="pn" id="pn_mod">—</span><span class="pq" id="pq_mod">—</span><span class="ps" id="ps_mod">—</span></div>
+        <div class="prow"><span class="pn" id="pn_bp">—</span><span class="pq" id="pq_bp">—</span><span class="ps" id="ps_bp">—</span></div>
+        <div class="prow"><span class="pn">MRV412</span><span class="pq" id="pq_card">—</span><span class="ps" id="ps_card">—</span></div>
+        <div class="prow"><span class="pn" id="pn_vc">—</span><span class="pq">1 шт</span><span class="ps" id="ps_vc">—</span></div>
+
+        <div class="total-row">
+          <span class="tl">ИТОГО КОМПЛЕКТУЮЩИЕ</span>
+          <span class="tv" id="r_total">—</span>
+        </div>
+
+        <button class="btn-pdf" id="btn_pdf" onclick="generatePDF()" disabled>📄 СКАЧАТЬ КП (PDF)</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast">✅ PDF сохранён!</div>
+
+<script>
+const MODS=[
+  {n:"Q2 Indoor 6000hz",    p:[31.68,35.2,38.72],   mw:320,mh:160,pw:160,ph:80, w:23},
+  {n:"Q2 Indoor 3840hz",    p:[29.934,33.26,36.586], mw:320,mh:160,pw:160,ph:80, w:23},
+  {n:"Q2.5 Indoor 6000hz",  p:[24.174,26.86,29.546], mw:320,mh:160,pw:128,ph:64, w:24},
+  {n:"Q2.5 Indoor 3840hz",  p:[22.59,25.1,27.61],    mw:320,mh:160,pw:128,ph:64, w:24},
+  {n:"Q2.5 Indoor 1920hz",  p:[21.654,24.06,26.466], mw:320,mh:160,pw:128,ph:64, w:24},
+  {n:"Q3.07 Indoor 6000hz", p:[19.782,21.98,24.178], mw:320,mh:160,pw:104,ph:52, w:22},
+  {n:"Q3.07 Indoor 3840hz", p:[19.094,21.216,23.338],mw:320,mh:160,pw:104,ph:52, w:22},
+  {n:"Q3.07 Indoor 1920hz", p:[16.157,17.952,19.747],mw:320,mh:160,pw:104,ph:52, w:22},
+  {n:"Q4 Indoor 6000hz",    p:[15.66,17.4,19.14],    mw:320,mh:160,pw:80, ph:40, w:24},
+  {n:"Q4 Indoor 3840hz",    p:[15.228,16.92,18.612], mw:320,mh:160,pw:80, ph:40, w:24},
+  {n:"Q4 Indoor 1920hz",    p:[13.593,15.103,16.614],mw:320,mh:160,pw:80, ph:40, w:24},
+  {n:"Q4 Outdoor 7680hz",   p:[20.682,22.98,25.278], mw:320,mh:160,pw:80, ph:40, w:47},
+  {n:"Q4 Outdoor 2880hz",   p:[19.836,22.04,24.244], mw:320,mh:160,pw:80, ph:40, w:47},
+  {n:"Q5 Outdoor 7680hz",   p:[17.19,19.1,21.01],    mw:320,mh:160,pw:64, ph:32, w:43},
+  {n:"Q5 Outdoor 2880hz",   p:[16.347,18.163,19.979],mw:320,mh:160,pw:64, ph:32, w:43},
+  {n:"Q6.66 Outdoor 7680hz",p:[16.74,18.6,20.46],    mw:320,mh:160,pw:48, ph:24, w:46},
+  {n:"Q6.66 Outdoor 2880hz",p:[15.966,17.74,19.514], mw:320,mh:160,pw:48, ph:24, w:46},
+  {n:"Q8 Outdoor 7680hz",   p:[14.49,16.1,17.71],    mw:320,mh:160,pw:40, ph:20, w:44},
+  {n:"Q8 Outdoor 2880hz",   p:[13.77,15.3,16.83],    mw:320,mh:160,pw:40, ph:20, w:44},
+];
+const BP_I={n:"БП 200Вт A-200AF-4.5 slim",p:[12.318,13.687,15.055],w:200};
+const BP_O={n:"БП 400Вт А-400JQ-4.5PH",  p:[26.748,29.72,32.692], w:400};
+const MRV={p:[27.72,30.8,33.88]};
+const VCS=[
+  {n:"VC2", l:"VC2 — 1.3 млн пикс, 2 порта",   p:[189.1,210.1,231.1],   ports:2,  mp:1300000},
+  {n:"VC4", l:"VC4 — 2.6 млн пикс, 4 порта",   p:[322.6,358.4,394.3],   ports:4,  mp:2600000},
+  {n:"VC6", l:"VC6 — 3.9 млн пикс, 6 портов",  p:[793.5,881.7,969.9],   ports:6,  mp:3900000},
+  {n:"VC10",l:"VC10 — 6.5 млн пикс, 10 портов",p:[1601.9,1779.8,1957.8],ports:10, mp:6500000},
+  {n:"VC16",l:"VC16 — 10.4 млн пикс, 16 портов",p:[3207.4,3563.8,3920.2],ports:16,mp:10400000},
+];
+let selVC=2, D=null;
+const fmt=n=>n.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtN=n=>n.toLocaleString('ru-RU');
+const $=id=>document.getElementById(id);
+const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+
+function calc(){
+  const lR=parseFloat($('length').value)||0, hR=parseFloat($('height').value)||0;
+  const mod=MODS.find(m=>m.n===$('module').value);
+  const env=$('env').value, pc=parseInt($('pc').value);
+  if(!mod||!lR||!hR)return;
+  const mwc=mod.mw/10, mhc=mod.mh/10;
+  const l=Math.round(lR/mwc)*mwc, h=Math.round(hR/mhc)*mhc;
+  const hl=$('hl'), hh=$('hh');
+  hl.textContent=l===lR?'✅ Точный размер':`⚠️ Округлю до ${l} см`; hl.className='hint '+(l===lR?'hint-ok':'hint-warn');
+  hh.textContent=h===hR?'✅ Точный размер':`⚠️ Округлю до ${h} см`; hh.className='hint '+(h===hR?'hint-ok':'hint-warn');
+  const mw=Math.round(l/mwc), mh=Math.round(h/mhc), mt=mw*mh;
+  const rw=mw*mod.pw, rh=mh*mod.ph, tp=rw*rh, area=l/100*h/100;
+  const bp=env==='Indoor'?BP_I:BP_O, bpQ=Math.ceil(mt/8);
+  const pm=mt*mod.w, pw2=Math.round(pm*.5), pn=bpQ*bp.w;
+  const mcH=Math.floor(512/mod.ph), ccol=Math.ceil(mh/mcH), tc=mw*ccol;
+  const ppc=mod.pw*mcH*mod.ph, cpp=Math.max(1,Math.floor(650000/ppc)), ports=Math.ceil(tc/cpp);
+  const rec=VCS.findIndex(v=>v.ports>=ports);
+  if(selVC<rec)selVC=rec;
+
+  // VC list
+  const vl=$('vc_list'); vl.innerHTML='';
+  VCS.forEach((vc,i)=>{
+    if(vc.ports<ports)return;
+    const d=document.createElement('div');
+    d.className='vc-opt'+(i===selVC?' sel':'')+(i===rec?' rec':'');
+    d.innerHTML=`<div class="vc-dot"></div><span class="vc-name">${vc.l}</span>${i===rec?'<span class="badge badge-r">РЕК.</span>':vc.ports>=ports?'<span class="badge badge-o">ОК</span>':''}`;
+    d.onclick=()=>{selVC=i;calc()};
+    vl.appendChild(d);
+  });
+
+  // Prices
+  const mp=mod.p[pc], bpp=bp.p[pc], cp=MRV.p[pc], vcp=VCS[selVC].p[pc];
+  const sm=mt*mp, sb=bpQ*bpp, sc=tc*cp, sv=vcp, tot=sm+sb+sc+sv;
+  const ref=(mod.n.match(/(\d+)hz/i)||['','—'])[1];
+
+  set('i_pix',fmtN(tp)); set('i_cards',tc+' шт'); set('i_ports',ports+' порт(а)');
+  set('r_mod',mod.n); set('r_env',env);
+  set('r_size',`${l} × ${h} см`); set('r_area',area.toFixed(2)+' м²');
+  set('r_msz',`${mod.mw} × ${mod.mh} мм`);
+  set('r_mods',`${mw} × ${mh} = ${mt} шт`);
+  set('r_res',`${rw} × ${rh} пикс`);
+  set('r_pix',fmtN(tp));
+  set('r_dens',fmtN(Math.round(tp/area)));
+  set('r_bright',env==='Indoor'?'500–600 nit':'4500–5000 nit');
+  set('r_ip',env==='Indoor'?'IP40':'IP65');
+  set('r_ref',ref+' Гц');
+  set('r_pwr',`${fmtN(pm)} / ${fmtN(pw2)} / ${fmtN(pn)} Вт`);
+  set('r_vc',VCS[selVC].n); set('r_ports',ports+' порт(а)');
+  set('pn_mod',mod.n); set('pq_mod',mt+' шт'); set('ps_mod',fmt(sm)+' $');
+  set('pn_bp',bp.n);   set('pq_bp',bpQ+' шт'); set('ps_bp',fmt(sb)+' $');
+  set('pq_card',tc+' шт'); set('ps_card',fmt(sc)+' $');
+  set('pn_vc',VCS[selVC].l); set('ps_vc',fmt(sv)+' $');
+  set('r_total',fmt(tot)+' $');
+  $('btn_pdf').disabled=false;
+
+  D={client:$('client').value||'—',manager:$('manager').value||'—',date:$('kp_date').value||new Date().toLocaleDateString('ru-RU'),
+    mod,env,pc,l,h,area,mw,mh,mt,rw,rh,tp,ref,pm,pw2,pn,bp,bpQ,tc,ports,vc:VCS[selVC],
+    mp,bpp,cp,vcp,sm,sb,sc,sv,tot};
+}
+
+function generatePDF(){
+  if(!D)return;
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const W=210,M=16,CW=W-M*2;
+  let y=0;
+
+  // Шапка
+  doc.setFillColor(13,15,20); doc.rect(0,0,W,36,'F');
+  doc.setFillColor(0,200,255); doc.rect(M,10,3,16,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.setTextColor(255,255,255);
+  doc.text('СВЕТОДИОД',M+8,20);
+  doc.setFontSize(8); doc.setTextColor(0,200,255);
+  doc.text('LED DISPLAY SYSTEMS',M+8,26);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(180,190,210);
+  doc.text('+7 (861) 29-29-800  |  +7 (928) 88-49-800',W-M,18,{align:'right'});
+  doc.text('tkled@mail.ru  |  tkled.ru',W-M,24,{align:'right'});
+  doc.text('г. Краснодар, ул. Сормовская, 34',W-M,30,{align:'right'});
+  y=46;
+
+  // Заголовок
+  doc.setFillColor(22,25,32); doc.roundedRect(M,y,CW,20,3,3,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(0,200,255);
+  doc.text('КОММЕРЧЕСКОЕ ПРЕДЛОЖЕНИЕ',M+CW/2,y+8,{align:'center'});
+  doc.setFontSize(10); doc.setTextColor(255,255,255);
+  doc.text('LED ВИДЕОЭКРАН',M+CW/2,y+15,{align:'center'});
+  y+=26;
+
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(100,110,140);
+  doc.text(`Клиент: ${D.client}`,M,y);
+  const dateStr=D.date?new Date(D.date).toLocaleDateString('ru-RU'):new Date().toLocaleDateString('ru-RU');
+  doc.text(`Дата: ${dateStr}`,W-M,y,{align:'right'});
+  y+=5; doc.text(`Менеджер: ${D.manager}`,M,y); y+=10;
+  doc.setDrawColor(42,47,61); doc.setLineWidth(0.3); doc.line(M,y,W-M,y); y+=7;
+
+  const secH=(t)=>{
+    doc.setFillColor(30,34,48); doc.rect(M,y,CW,8,'F');
+    doc.setFillColor(0,200,255); doc.rect(M,y,2,8,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(0,200,255);
+    doc.text(t,M+5,y+5.5); y+=12;
+  };
+  const dRow=(l,v,e)=>{
+    if(e){doc.setFillColor(18,20,28); doc.rect(M,y-2,CW,7,'F');}
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(90,100,130);
+    doc.text(l,M+3,y+3.5);
+    doc.setFont('helvetica','bold'); doc.setTextColor(220,225,240);
+    doc.text(v,W-M-3,y+3.5,{align:'right'}); y+=7;
+  };
+
+  secH('РАЗДЕЛ 1 — ТЕХНИЧЕСКИЕ ХАРАКТЕРИСТИКИ');
+  const {fmtN:fn}={fmtN:n=>n.toLocaleString('ru-RU')};
+  const rows=[
+    ['Тип модуля / Pixel pitch',D.mod.n],
+    ['Тип применения',D.env],
+    ['Размер экрана (Д × В)',`${D.l} × ${D.h} см`],
+    ['Площадь экрана',`${D.area.toFixed(2)} м²`],
+    ['Размер модуля',`${D.mod.mw} × ${D.mod.mh} мм`],
+    ['Модулей (Ш × В = итого)',`${D.mw} × ${D.mh} = ${D.mt} шт`],
+    ['Разрешение экрана',`${D.rw} × ${D.rh} пикс`],
+    ['Всего пикселей',D.tp.toLocaleString('ru-RU')],
+    ['Плотность пикселей',`${Math.round(D.tp/D.area).toLocaleString('ru-RU')} пикс/м²`],
+    ['Яркость',D.env==='Indoor'?'500–600 nit':'4500–5000 nit'],
+    ['Степень защиты IP',D.env==='Indoor'?'IP40':'IP65'],
+    ['Частота обновления',`${D.ref} Гц`],
+    ['Потребление макс.',`${D.pm.toLocaleString('ru-RU')} Вт`],
+    ['Потребление рабочее (~50%)',`${D.pw2.toLocaleString('ru-RU')} Вт`],
+    ['Потребление номинальное (по БП)',`${D.pn.toLocaleString('ru-RU')} Вт`],
+    ['Кол-во блоков питания',`${D.bpQ} шт`],
+    ['Приёмных карт MRV412',`${D.tc} шт`],
+    ['Портов видеопроцессора',`${D.ports}`],
+    ['Видеопроцессор',D.vc.n],
+  ];
+  rows.forEach((r,i)=>dRow(r[0],r[1],i%2===0));
+  y+=4;
+
+  secH('РАЗДЕЛ 2 — СТОИМОСТЬ КОМПЛЕКТУЮЩИХ');
+  doc.setFillColor(30,34,48); doc.rect(M,y-2,CW,7,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(0,200,255);
+  doc.text('ПОЗИЦИЯ',M+3,y+3); doc.text('КОЛ-ВО',M+100,y+3); doc.text('ЦЕНА $',M+126,y+3);
+  doc.text('СУММА $',W-M-3,y+3,{align:'right'}); y+=9;
+
+  const pRow=(nm,qty,pr,sm,e)=>{
+    if(e){doc.setFillColor(18,20,28); doc.rect(M,y-2,CW,8,'F');}
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(200,205,220);
+    doc.text(nm,M+3,y+3.5,{maxWidth:90});
+    doc.setTextColor(90,100,130); doc.text(qty,M+100,y+3.5); doc.text(fmt(pr),M+126,y+3.5);
+    doc.setFont('helvetica','bold'); doc.setTextColor(0,200,255);
+    doc.text(fmt(sm),W-M-3,y+3.5,{align:'right'}); y+=8;
+  };
+  pRow(D.mod.n,D.mt+' шт',D.mp,D.sm,false);
+  pRow(D.bp.n,D.bpQ+' шт',D.bpp,D.sb,true);
+  pRow('MRV412 (приёмная карта)',D.tc+' шт',D.cp,D.sc,false);
+  pRow(D.vc.l,'1 шт',D.vcp,D.sv,true);
+  y+=4;
+
+  doc.setFillColor(0,200,255); doc.roundedRect(M,y,CW,12,2,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(0,0,0);
+  doc.text('ИТОГО КОМПЛЕКТУЮЩИЕ (без монтажа и конструкции)',M+5,y+7.5);
+  doc.setFontSize(12); doc.text(fmt(D.tot)+' USD',W-M-4,y+7.5,{align:'right'});
+  y+=20;
+
+  doc.setDrawColor(42,47,61); doc.line(M,y,W-M,y); y+=5;
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(80,90,110);
+  doc.text('Цены указаны в USD без НДС. Монтаж, металлоконструкция и корпусные решения рассчитываются отдельно.',M,y); y+=4;
+  doc.text('Гарантия на оборудование: 18 месяцев. Данное КП не является публичной офертой.',M,y);
+
+  const fn2=D.client.replace(/[\s\/\\:*?"<>|]/g,'_');
+  doc.save(`КП_${fn2}_${new Date().toLocaleDateString('ru-RU').replace(/\./g,'-')}.pdf`);
+  const t=$('toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+$('kp_date').value=new Date().toISOString().split('T')[0];
+calc();
+</script>
+</body>
+</html>
